@@ -34,6 +34,12 @@
             // Clear any previous output
             outputElement.textContent = "Loading...";
 
+            // Validate URL format
+            if (!url.match(/^https?:\/\/(www\.)?youtube\.com\/watch\?v=[a-zA-Z0-9_-]{11}/)) {
+                outputElement.textContent = "Error: Please enter a valid YouTube URL.";
+                return;
+            }
+
             try {
                 // Fetch transcript data from the Netlify function
                 const response = await fetch(`/.netlify/functions/fetchTranscript?url=${encodeURIComponent(url)}`);
@@ -45,7 +51,7 @@
                 } else {
                     // Decode HTML entities and join the transcript text into a single paragraph
                     const transcriptText = data.map(item => decodeHtmlEntities(item.text)).join(' ');
-                    outputElement.textContent = transcriptText;
+                    outputElement.innerHTML = transcriptText;  // Use innerHTML for formatting
                 }
             } catch (error) {
                 outputElement.textContent = `Error fetching transcript: ${error.message}`;
