@@ -3,11 +3,10 @@ const axios = require('axios');
 const HttpsProxyAgent = require('https-proxy-agent');
 
 // Proxy configuration
-const PROXY_URL = 'http://170.106.158.82:13001';  // Replace with your proxy details
-const proxyAgent = new HttpsProxyAgent(PROXY_URL);
+const PROXY_URL = 'http://170.106.158.82:13001'; // Replace with your proxy details.  Ensure this is correct and accessible.
 
 exports.handler = async function(event, context) {
-    const videoUrl = event.queryStringParameters.url;
+    const videoUrl = event.queryStringParameters?.url; // Use optional chaining
 
     if (!videoUrl) {
         return {
@@ -24,7 +23,6 @@ exports.handler = async function(event, context) {
         };
     }
 
-    // Proxy server logic
     try {
         const transcript = await fetchTranscriptFromProxy(videoId);
         return {
@@ -32,28 +30,31 @@ exports.handler = async function(event, context) {
             body: JSON.stringify(transcript),
         };
     } catch (error) {
+        console.error("Error fetching transcript:", error); // Log the error for debugging
         return {
             statusCode: 500,
-            body: JSON.stringify({ error: 'Error fetching transcript via proxy: ' + error.message }),
+            body: JSON.stringify({ error: 'Error fetching transcript: ' + error.message }), //Include original error message
         };
     }
 };
 
 // Proxy function to make the request from server-side
 async function fetchTranscriptFromProxy(videoId) {
-    // Create a custom axios instance with the proxy agent
-    const axiosInstance = axios.create({
-        httpsAgent: proxyAgent,  // Use the proxy agent
-    });
-
     try {
+        // Create a custom axios instance with the proxy agent.  Move this *inside* the function.
+        const proxyAgent = new HttpsProxyAgent(PROXY_URL);
+        const axiosInstance = axios.create({
+            httpsAgent: proxyAgent, // Use the proxy agent
+        });
+
         // Make the request to fetch the transcript through the proxy
         const transcript = await YoutubeTranscript.fetchTranscript(videoId, {
-            axiosInstance,  // Pass the custom axios instance with proxy
+            axiosInstance, // Pass the custom axios instance with proxy
         });
         return transcript;
     } catch (error) {
-        throw new Error('Error fetching transcript from proxy: ' + error.message);
+        //  Important:  Wrap the error to provide context.
+        throw new Error(`Error fetching transcript with proxy: ${error.message}`);
     }
 }
 
