@@ -1,4 +1,10 @@
 const { YoutubeTranscript } = require('youtube-transcript');
+const axios = require('axios');
+const HttpsProxyAgent = require('https-proxy-agent');
+
+// Proxy configuration
+const PROXY_URL = 'http://170.106.158.82:13001';  // Replace with your proxy details
+const proxyAgent = new HttpsProxyAgent(PROXY_URL);
 
 exports.handler = async function(event, context) {
     const videoUrl = event.queryStringParameters.url;
@@ -35,12 +41,16 @@ exports.handler = async function(event, context) {
 
 // Proxy function to make the request from server-side
 async function fetchTranscriptFromProxy(videoId) {
-    // This would be where you can make the request to the `youtube-transcript` API
-    // or handle the proxying logic.
-    // Since you are using Netlify functions, this will make the request server-side.
+    // Create a custom axios instance with the proxy agent
+    const axiosInstance = axios.create({
+        httpsAgent: proxyAgent,  // Use the proxy agent
+    });
+
     try {
-        // Fetch the transcript from the youtube-transcript library
-        const transcript = await YoutubeTranscript.fetchTranscript(videoId);
+        // Make the request to fetch the transcript through the proxy
+        const transcript = await YoutubeTranscript.fetchTranscript(videoId, {
+            axiosInstance,  // Pass the custom axios instance with proxy
+        });
         return transcript;
     } catch (error) {
         throw new Error('Error fetching transcript from proxy: ' + error.message);
