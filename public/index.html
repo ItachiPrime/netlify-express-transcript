@@ -34,12 +34,6 @@
           // Clear any previous output
           outputElement.textContent = "Loading...";
   
-          // Validate URL format
-          if (!url.match(/^https?:\/\/(www\.)?youtube\.com\/watch\?v=[a-zA-Z0-9_-]{11}/)) {
-              outputElement.textContent = "Error: Please enter a valid YouTube URL.";
-              return;
-          }
-  
           try {
               // Fetch transcript data from the Netlify function
               const response = await fetch(`/.netlify/functions/fetchTranscript?url=${encodeURIComponent(url)}`);
