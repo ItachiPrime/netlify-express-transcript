@@ -18,8 +18,9 @@ exports.handler = async function(event, context) {
         };
     }
 
+    // Proxy server logic
     try {
-        const transcript = await YoutubeTranscript.fetchTranscript(videoId);
+        const transcript = await fetchTranscriptFromProxy(videoId);
         return {
             statusCode: 200,
             body: JSON.stringify(transcript),
@@ -27,10 +28,24 @@ exports.handler = async function(event, context) {
     } catch (error) {
         return {
             statusCode: 500,
-            body: JSON.stringify({ error: 'Error fetching transcript: ' + error.message }),
+            body: JSON.stringify({ error: 'Error fetching transcript via proxy: ' + error.message }),
         };
     }
 };
+
+// Proxy function to make the request from server-side
+async function fetchTranscriptFromProxy(videoId) {
+    // This would be where you can make the request to the `youtube-transcript` API
+    // or handle the proxying logic.
+    // Since you are using Netlify functions, this will make the request server-side.
+    try {
+        // Fetch the transcript from the youtube-transcript library
+        const transcript = await YoutubeTranscript.fetchTranscript(videoId);
+        return transcript;
+    } catch (error) {
+        throw new Error('Error fetching transcript from proxy: ' + error.message);
+    }
+}
 
 // Utility function to extract video ID from URL
 function extractVideoIdFromUrl(url) {
