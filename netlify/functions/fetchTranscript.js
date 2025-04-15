@@ -1,6 +1,6 @@
 const { YoutubeTranscript } = require('youtube-transcript');
 const axios = require('axios');
-const HttpsProxyAgent = require('https-proxy-agent');
+const { HttpsProxyAgent } = require('https-proxy-agent'); // Changed to destructuring import
 
 // Proxy configuration
 const PROXY_URL = 'http://170.106.158.82:13001'; // Replace with your proxy details.  Ensure this is correct and accessible.
@@ -42,7 +42,7 @@ exports.handler = async function(event, context) {
 async function fetchTranscriptFromProxy(videoId) {
     try {
         // Create a custom axios instance with the proxy agent.  Move this *inside* the function.
-        const proxyAgent = new HttpsProxyAgent(PROXY_URL);
+        const proxyAgent = new HttpsProxyAgent(PROXY_URL); // Use new here
         const axiosInstance = axios.create({
             httpsAgent: proxyAgent, // Use the proxy agent
         });
