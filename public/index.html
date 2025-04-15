@@ -17,46 +17,51 @@
     <p id="output"></p>
 
     <script>
-        // Function to decode HTML entities (e.g., &amp;#39; to apostrophe)
-        function decodeHtmlEntities(text) {
-            const txt = document.createElement('textarea');
-            txt.innerHTML = text;
-            return txt.value;
-        }
-
-        // Event listener for form submission
-        document.getElementById('form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const url = document.getElementById('video-url').value;
-            const outputElement = document.getElementById('output');
-            
-            // Clear any previous output
-            outputElement.textContent = "Loading...";
-
-            // Validate URL format
-            if (!url.match(/^https?:\/\/(www\.)?youtube\.com\/watch\?v=[a-zA-Z0-9_-]{11}/)) {
-                outputElement.textContent = "Error: Please enter a valid YouTube URL.";
-                return;
-            }
-
-            try {
-                // Fetch transcript data from the Netlify function
-                const response = await fetch(`/.netlify/functions/fetchTranscript?url=${encodeURIComponent(url)}`);
-                const data = await response.json();
-
-                // Check if the response contains an error
-                if (data.error) {
-                    outputElement.textContent = `Error: ${data.error}`;
-                } else {
-                    // Decode HTML entities and join the transcript text into a single paragraph
-                    const transcriptText = data.map(item => decodeHtmlEntities(item.text)).join(' ');
-                    outputElement.innerHTML = transcriptText;  // Use innerHTML for formatting
-                }
-            } catch (error) {
-                outputElement.textContent = `Error fetching transcript: ${error.message}`;
-            }
-        });
-    </script>
+      // Function to decode HTML entities (e.g., &amp;#39; to apostrophe)
+      function decodeHtmlEntities(text) {
+          const txt = document.createElement('textarea');
+          txt.innerHTML = text;
+          return txt.value;
+      }
+  
+      // Event listener for form submission
+      document.getElementById('form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+  
+          const url = document.getElementById('video-url').value;
+          const outputElement = document.getElementById('output');
+          
+          // Clear any previous output
+          outputElement.textContent = "Loading...";
+  
+          // Validate URL format
+          if (!url.match(/^https?:\/\/(www\.)?youtube\.com\/watch\?v=[a-zA-Z0-9_-]{11}/)) {
+              outputElement.textContent = "Error: Please enter a valid YouTube URL.";
+              return;
+          }
+  
+          try {
+              // Fetch transcript data from the Netlify function
+              const response = await fetch(`/.netlify/functions/fetchTranscript?url=${encodeURIComponent(url)}`);
+              const data = await response.json();
+  
+              // Debugging: Log the response to see its structure
+              console.log('Fetched data:', data);
+  
+              // Check if the response contains an error
+              if (data.error) {
+                  outputElement.textContent = `Error: ${data.error}`;
+              } else if (Array.isArray(data)) {
+                  // Decode HTML entities and join the transcript text into a single paragraph
+                  const transcriptText = data.map(item => decodeHtmlEntities(item.text)).join(' ');
+                  outputElement.innerHTML = transcriptText;  // Use innerHTML for formatting
+              } else {
+                  outputElement.textContent = 'Error: Unexpected response format.';
+              }
+          } catch (error) {
+              outputElement.textContent = `Error fetching transcript: ${error.message}`;
+          }
+      });
+  </script>  
 </body>
 </html>
